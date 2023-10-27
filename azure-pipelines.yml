@@ -7,10 +7,9 @@ pool:
 variables:
 - name: DEV_ENVIRONMENT
   value: dev
-- name: Deploy-kube-manifests
-  value: kube    
 
 stages:
+  #Stage-01-TerraformValidate
   - stage: TerraformValidate
     jobs:
       - job: TerraformValidateJob
@@ -45,4 +44,5 @@ stages:
             command: 'validate'
             workingDirectory: '$(System.DefaultWorkingDirectory)/terraform-manifests-aks'
             allowTelemetryCollection: false
+
             
