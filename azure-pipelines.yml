@@ -38,7 +38,7 @@ stages:
             backendAzureRmContainerName: 'tfstatefiles-v45'
             backendAzureRmKey: 'aks-base.tfstate'
             allowTelemetryCollection: false
-        #  using terraformCLI execute terraform Validate the code 
+        # using terraformCLI execute terraform Validate the code 
         - task: TerraformCLI@1
           inputs:
             command: 'validate'
@@ -56,7 +56,36 @@ stages:
          runOnce:
            deploy:
              steps:
+             # Fetch the key from secret under Library   
               - task: DownloadSecureFile@1
                 name: sshkey
                 inputs:
                   secureFile: 'aksprodsshkey.pub'
+             # using terraformCLI execute terraform init and store the tfState file in the storeage account created      
+              - task: TerraformCLI@1
+                inputs:
+                  command: 'init'
+                  workingDirectory: '$(Pipeline.Workspace)/terraform-manifests-out'
+                  backendType: 'azurerm'
+                  backendServiceArm: 'terraform-aks-azurerm-svc-con'
+                  backendAzureRmResourceGroupName: 'terraformstateronrg045'
+                  backendAzureRmStorageAccountName: 'terraformstoragerg045'
+                  backendAzureRmContainerName: 'tfstatefiles-v45'
+                  backendAzureRmKey: 'aks-$(DEV_ENVIRONMENT).tfstate'
+                  allowTelemetryCollection: false
+             # using terraformCLI execute terraform Plan    
+              - task: TerraformCLI@1
+                inputs:
+                  command: 'plan'
+                  workingDirectory: '$(Pipeline.Workspace)/terraform-manifests-out'
+                  environmentServiceName: 'terraform-aks-azurerm-svc-con'
+                  commandOptions: '-var ssh_public_key=$(sshkey.secureFilePath) -var environment=$(DEV_ENVIRONMENT) -out $(Pipeline.Workspace)/terraform-manifests-out/$(DEV_ENVIRONMENT)-$(Build.BuildId).out'
+                  allowTelemetryCollection: false
+             # # using terraformCLI execute terraform apply     
+              - task: TerraformCLI@1
+                inputs:
+                  command: 'apply'
+                  workingDirectory: '$(Pipeline.Workspace)/terraform-manifests-out'
+                  environmentServiceName: 'terraform-aks-azurerm-svc-con'
+                  commandOptions: '$(Pipeline.Workspace)/terraform-manifests-out/$(DEV_ENVIRONMENT)-$(Build.BuildId).out'
+                  allowTelemetryCollection: false    
