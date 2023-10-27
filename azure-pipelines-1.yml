@@ -15,7 +15,7 @@ variables:
 
 stages:
   - stage: Deploy
-    displayName: Deploy stage
+    displayName: Deploystage
     jobs:
       - job: Deploykubemanifests01
         steps:
