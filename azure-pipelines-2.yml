@@ -1,0 +1,22 @@
+trigger:
+- master
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+- name: Deploykubemanifests03
+  value: kube  
+
+stages:
+  - stage: Deploy
+    displayName: Deploystage
+    jobs:
+      - job: Deploykubemanifests03
+        steps:
+          
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/03-Windows-DotNet-Apps/'
+              artifact: '03-Windows-DotNet-Apps'
+              publishLocation: 'pipeline'
