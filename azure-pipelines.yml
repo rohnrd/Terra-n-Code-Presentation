@@ -88,4 +88,4 @@ stages:
                   workingDirectory: '$(Pipeline.Workspace)/terraform-manifests-out'
                   environmentServiceName: 'terraform-aks-azurerm-svc-con'
                   commandOptions: '$(Pipeline.Workspace)/terraform-manifests-out/$(DEV_ENVIRONMENT)-$(Build.BuildId).out'
-                  allowTelemetryCollection: false    
+                  allowTelemetryCollection: false
