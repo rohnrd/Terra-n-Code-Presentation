@@ -1,0 +1,48 @@
+trigger:
+- master
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+- name: DEV_ENVIRONMENT
+  value: dev
+- name: Deploy-kube-manifests
+  value: kube    
+
+stages:
+  - stage: TerraformValidate
+    jobs:
+      - job: TerraformValidateJob
+        continueOnError: false
+        steps:
+        # Publish Pipeline Artfact to import the terraform code into pipeline  
+        - task: PublishPipelineArtifact@1
+          inputs:
+            targetPath: '$(System.DefaultWorkingDirectory)/terraform-manifests-aks'
+            artifact: 'terraform-manifests-out'
+            publishLocation: 'pipeline'
+        # https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/publish-pipeline-artifact-v1?view=azure-pipelines
+        # Install terraform  VMimage 
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: 'latest'
+        # using terraformCLI execute terraform init and store the tfState file in the storeage account created   
+        - task: TerraformCLI@1
+          inputs:
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/terraform-manifests-aks'
+            backendType: 'azurerm'
+            backendServiceArm: 'terraform-aks-azurerm-svc-con'
+            backendAzureRmResourceGroupName: 'terraformstateronrg045'
+            backendAzureRmStorageAccountName: 'terraformstoragerg045'
+            backendAzureRmContainerName: 'tfstatefiles-v45'
+            backendAzureRmKey: 'aks-base.tfstate'
+            allowTelemetryCollection: false
+        #  using terraformCLI execute terraform Validate the code 
+        - task: TerraformCLI@1
+          inputs:
+            command: 'validate'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/terraform-manifests-aks'
+            allowTelemetryCollection: false
+            
