@@ -45,4 +45,18 @@ stages:
             workingDirectory: '$(System.DefaultWorkingDirectory)/terraform-manifests-aks'
             allowTelemetryCollection: false
 
-            
+  #Stage-02-Terraformapply          
+  - stage: DeployAKSClusters
+    jobs:
+      - deployment: DeployDevAKSCluster
+        pool:
+          vmImage: 'ubuntu-latest'
+        environment: $(DEV_ENVIRONMENT)  
+        strategy:
+         runOnce:
+           deploy:
+             steps:
+              - task: DownloadSecureFile@1
+                name: sshkey
+                inputs:
+                  secureFile: 'aksprodsshkey.pub'
